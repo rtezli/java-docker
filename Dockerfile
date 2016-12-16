@@ -1,25 +1,22 @@
-FROM debian:wheezy
+FROM debian:jessie
 
-MAINTAINER Robert Tezli <robert@pixills.com>
+MAINTAINER Robert Tezli (robert@pixills.com)
 
-RUN apt-get update && \
-    apt-get install -y wget && \
-    mkdir -p /usr/share/java && \
-    cd /usr/share/java && \
+ENV JAVA_MAJOR_VERSION 1
+ENV JAVA_MINOR_VERSION 8
+ENV JAVA_UPDATE_VERSION 111
+ENV JAVA_VERSION ${JAVA_MINOR_VERSION}u${JAVA_UPDATE_VERSION}
+ENV JAVA_BUILD_VERSION b14
+ENV JAVA_ROOT /usr/lib/java
+ENV JAVA_HOME ${JAVA_ROOT}/jdk${JAVA_MAJOR_VERSION}.${JAVA_MINOR_VERSION}.0_${JAVA_UPDATE_VERSION}
+ENV PATH ${PATH}:${JAVA_HOME}/bin
+ENV PATH ${PATH}:${JAVA_HOME}/sbin
 
-    wget -nv --no-check-certificate \
-    --no-cookies \
-    --header "Cookie:oraclelicense=accept-securebackup-cookie" \
-    http://download.oracle.com/otn-pub/java/jdk/8u60-b27/jre-8u60-linux-x64.tar.gz && \
-    tar zxf jre-8u60-linux-x64.tar.gz && \
-    rm -rf jre-8u60-linux-x64.tar.gz && \
-    ln -s /usr/share/java/jre1.8.0_60 /usr/share/java/latest && \
-    update-alternatives --install "/usr/bin/java"   "java"   "/usr/share/java/latest/bin/java" 1 && \
-    update-alternatives --install "/usr/bin/javaws" "javaws" "/usr/share/java/latest/bin/javaws" 1 && \
-    update-alternatives --set                       "java"   "/usr/share/java/latest/bin/java" && \
-    update-alternatives --set                       "javaws" "/usr/share/java/latest/bin/javaws"
+RUN apt-get update &&\
+    apt-get install -yqq wget &&\
+    mkdir -p ${JAVA_HOME} &&\
+    wget -nv -qO- --no-check-certificate --no-cookies --header "Cookie:oraclelicense=accept-securebackup-cookie" \
+    http://download.oracle.com/otn-pub/java/jdk/${JAVA_VERSION}-${JAVA_BUILD_VERSION}/server-jre-${JAVA_VERSION}-linux-x64.tar.gz | tar zx -C ${JAVA_ROOT}
 
-ENV JAVA_HOME /usr/share/java/latest
-ENV PATH /usr/share/java/latest/bin:\
-/usr/share/java/latest/sbin:\
-$PATH
+RUN update-alternatives --install "/usr/bin/java"   "java"   "${JAVA_HOME}/bin/java" 1 &&\
+    update-alternatives --set                       "java"   "${JAVA_HOME}/bin/java"
